@@ -12,6 +12,24 @@ const MyProfile = () => {
 
     const { token, backendUrl, userData, setUserData, loadUserProfileData } = useContext(AppContext)
 
+    // Helper function to calculate precise age
+    const calculateAge = (dob) => {
+        if (!dob) return 'N/A';
+        const today = new Date();
+        const birthDate = new Date(dob);
+        
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        
+        // If the birth month hasn't happened yet, OR 
+        // if we are in the birth month but the day hasn't happened yet:
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+      
+        return age;
+      }
+
     // Function to update user profile data using API
     const updateUserProfileData = async () => {
 
@@ -93,8 +111,12 @@ const MyProfile = () => {
             <div>
                 <p className='text-[#797979] underline mt-3'>BASIC INFORMATION</p>
                 <div className='grid grid-cols-[1fr_3fr] gap-y-2.5 mt-3 text-gray-600'>
-                    <p className='font-medium'>Gender:</p>
+                    
+                    {/* Added Age Display */}
+                    <p className='font-medium'>Age:</p>
+                    <p className='text-gray-500'>{calculateAge(userData.dob)}</p>
 
+                    <p className='font-medium'>Gender:</p>
                     {isEdit
                         ? <select className='max-w-20 bg-gray-50' onChange={(e) => setUserData(prev => ({ ...prev, gender: e.target.value }))} value={userData.gender} >
                             <option value="Not Selected">Not Selected</option>

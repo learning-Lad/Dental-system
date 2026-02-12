@@ -69,11 +69,10 @@ const loginUser = async (req, res) => {
             return res.json({ success: false, message: "User does not exist" })
         }
 
-        // --- NEW: Check if user is banned ---
+        // Check if user is banned
         if (user.isBanned) {
             return res.json({ success: false, message: "Your account is banned due to excessive cancellations." })
         }
-        // ------------------------------------
 
         const isMatch = await bcrypt.compare(password, user.password)
 
@@ -97,7 +96,20 @@ const getProfile = async (req, res) => {
         const { userId } = req.body
         const userData = await userModel.findById(userId).select('-password')
 
-        res.json({ success: true, userData })
+        // OPTIONAL: Calculate age here if needed on backend
+        let age = "N/A";
+        if (userData.dob) {
+            const today = new Date();
+            const birthDate = new Date(userData.dob);
+            age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+        }
+
+        // We send the raw data, but you can also send the calculated 'age' if you modify the response structure
+        res.json({ success: true, userData, age })
 
     } catch (error) {
         console.log(error)
@@ -142,13 +154,12 @@ const bookAppointment = async (req, res) => {
     try {
 
         const { userId, docId, slotDate, slotTime } = req.body
-        
-        // --- NEW: Check if user is banned before allowing booking ---
+
+        // Check if user is banned
         const userCheck = await userModel.findById(userId);
         if (userCheck.isBanned) {
             return res.json({ success: false, message: "You are banned from booking appointments." })
         }
-        // -----------------------------------------------------------
 
         const docData = await doctorModel.findById(docId).select("-password")
 
@@ -157,6 +168,11 @@ const bookAppointment = async (req, res) => {
         }
 
         let slots_booked = docData.slots_booked
+
+        // Initialize slots_booked if it doesn't exist
+        if (!slots_booked) {
+            slots_booked = {}
+        }
 
         // checking for slot availablity 
         if (slots_booked[slotDate]) {
@@ -206,8 +222,13 @@ const cancelAppointment = async (req, res) => {
     try {
 
         const { userId, appointmentId } = req.body
-        
+
         const appointmentData = await appointmentModel.findById(appointmentId)
+
+        // Verify appointment exists
+        if (!appointmentData) {
+            return res.json({ success: false, message: 'Appointment not found' })
+        }
 
         // verify appointment user 
         if (appointmentData.userId !== userId) {
@@ -223,13 +244,16 @@ const cancelAppointment = async (req, res) => {
 
         let slots_booked = doctorData.slots_booked
 
-        slots_booked[slotDate] = slots_booked[slotDate].filter(e => e !== slotTime)
+        // Safety check: ensure the slot date actually exists in the booked slots
+        if (slots_booked[slotDate]) {
+            slots_booked[slotDate] = slots_booked[slotDate].filter(e => e !== slotTime)
+        }
 
+        // Mark as modified to ensure Mongoose updates the 'Mixed' type object
         await doctorModel.findByIdAndUpdate(docId, { slots_booked })
 
-        // --- NEW: Increment Cancellation Count for Admin Tracking ---
+        // Increment Cancellation Count
         await userModel.findByIdAndUpdate(userId, { $inc: { cancellationCount: 1 } })
-        // -----------------------------------------------------------
 
         res.json({ success: true, message: 'Appointment Cancelled' })
 
