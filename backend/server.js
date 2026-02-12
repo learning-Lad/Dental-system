@@ -20,11 +20,11 @@ app.use(express.json())
 app.use(cors());
 
 // api endpoints
-app.use("api/user", userRouter)
-app.use("api/admin", adminRouter)
-app.use("api/doctor", doctorRouter)
+app.use("/api/user", userRouter)
+app.use("/api/admin", adminRouter)
+app.use("/api/doctor", doctorRouter)
 
-app.get("/", (req, res) => {
+app.get(" ", (req, res) => {
   res.send("API Working")
 });
 
