@@ -128,7 +128,7 @@ const deleteDoctor = async (doctorId) => {
     const data = await response.json();
 
     if (data.success) {
-      toast.success("Doctor deleted successfully");  // ✔ like Availability Changed
+      toast.success("Doctor deleted successfully");  
       getAllDoctors();
     } else {
       toast.error(data.message || "Failed to delete doctor");
