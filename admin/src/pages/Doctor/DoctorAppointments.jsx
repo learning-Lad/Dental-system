@@ -9,7 +9,8 @@ import axios from 'axios'
 const DoctorAppointments = () => {
 
   const { dToken, appointments, getAppointments, cancelAppointment, completeAppointment } = useContext(DoctorContext)
-  const { slotDateFormat, calculateAge, currency, backendUrl } = useContext(AppContext)
+  
+  const { slotDateFormat, currency, backendUrl } = useContext(AppContext)
 
   const [prescriptionText, setPrescriptionText] = useState('')
   const [editPrescriptionId, setEditPrescriptionId] = useState(null)
@@ -19,6 +20,22 @@ const DoctorAppointments = () => {
       getAppointments()
     }
   }, [dToken])
+
+  //  Added this precise Age Calculation function
+  const calculateAge = (dob) => {
+    const today = new Date();
+    const birthDate = new Date(dob);
+    
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    
+    // Check if birthday has happened this year yet
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    
+    return age;
+  }
 
   // Function to save prescription
   const handlePrescriptionSubmit = async (appointmentId) => {
@@ -30,7 +47,7 @@ const DoctorAppointments = () => {
       if (data.success) {
         toast.success(data.message)
         setEditPrescriptionId(null) // Close the box
-        getAppointments() // Refresh data to show updated prescription
+        getAppointments() 
       } else {
         toast.error(data.message)
       }
@@ -59,10 +76,10 @@ const DoctorAppointments = () => {
         </div>
 
         {appointments.map((item, index) => (
-          // WRAPPER DIV: Handles the border and grouping the row + prescription box
+          
           <div className='border-b hover:bg-gray-50' key={index}>
             
-            {/* Existing Appointment Row */}
+            
             <div className='flex flex-wrap justify-between max-sm:gap-5 max-sm:text-base sm:grid grid-cols-[0.5fr_2fr_1fr_1fr_3fr_1fr_1fr] gap-1 items-center text-gray-500 py-3 px-6'>
               <p className='max-sm:hidden'>{index + 1}</p>
               <div className='flex items-center gap-2'>
@@ -73,7 +90,10 @@ const DoctorAppointments = () => {
                   {item.payment ? 'Online' : 'CASH'}
                 </p>
               </div>
+              
+             
               <p className='max-sm:hidden'>{calculateAge(item.userData.dob)}</p>
+              
               <p>{slotDateFormat(item.slotDate)}, {item.slotTime}</p>
               <p>{currency}{item.amount}</p>
               

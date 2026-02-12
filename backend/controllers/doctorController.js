@@ -53,12 +53,31 @@ const appointmentCancel = async (req, res) => {
         const { docId, appointmentId } = req.body
 
         const appointmentData = await appointmentModel.findById(appointmentId)
+        
         if (appointmentData && appointmentData.docId === docId) {
+            
             await appointmentModel.findByIdAndUpdate(appointmentId, { cancelled: true })
+
+            // --- RELEASING SLOT LOGIC (Added) ---
+            // Fetch doctor data to get current slots
+            const doctorData = await doctorModel.findById(docId)
+            let slots_booked = doctorData.slots_booked
+
+            const { slotDate, slotTime } = appointmentData
+
+            // Filter out the cancelled time from the booked slots
+            if (slots_booked[slotDate]) {
+                slots_booked[slotDate] = slots_booked[slotDate].filter(e => e !== slotTime)
+            }
+
+            // Update the doctor data with freed slots
+            await doctorModel.findByIdAndUpdate(docId, { slots_booked })
+            // -------------------------------------
+
             return res.json({ success: true, message: 'Appointment Cancelled' })
         }
 
-        res.json({ success: false, message: 'Appointment Cancelled' })
+        res.json({ success: false, message: 'Appointment not found' })
 
     } catch (error) {
         console.log(error)
@@ -74,12 +93,13 @@ const appointmentComplete = async (req, res) => {
         const { docId, appointmentId } = req.body
 
         const appointmentData = await appointmentModel.findById(appointmentId)
+        
         if (appointmentData && appointmentData.docId === docId) {
             await appointmentModel.findByIdAndUpdate(appointmentId, { isCompleted: true })
             return res.json({ success: true, message: 'Appointment Completed' })
         }
 
-        res.json({ success: false, message: 'Appointment Cancelled' })
+        res.json({ success: false, message: 'Appointment not found' })
 
     } catch (error) {
         console.log(error)
@@ -173,8 +193,6 @@ const doctorDashboard = async (req, res) => {
             }
         })
 
-
-
         const dashData = {
             earnings,
             appointments: appointments.length,
@@ -190,7 +208,7 @@ const doctorDashboard = async (req, res) => {
     }
 }
 
-    // API to add/update prescription for a specific appointment
+// API to add/update prescription for a specific appointment
 const addPrescription = async (req, res) => {
     try {
         const { appointmentId, prescription } = req.body;
@@ -213,7 +231,6 @@ const addPrescription = async (req, res) => {
     }
 }
     
-
 
 export {
     loginDoctor,
