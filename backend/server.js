@@ -23,20 +23,7 @@ const allowedOrigins = [
   'https://dental-system-pn7v-mmpk9zwt0-learning-lads-projects.vercel.app/'      
 ];
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS policy'));
-    }
-  },
-  credentials: true
-}));
-
+app.use(cors());
 
 // api endpoints
 app.use("/api/user", userRouter)
