@@ -19,8 +19,8 @@ app.use(express.json())
 
 
 const allowedOrigins = [
-  'https://dental-system-pcid-a6383wvgm-learning-lads-projects.vercel.app',
-  'https://dental-system-h7re-lumy0hh7b-learning-lads-projects.vercel.app'      
+  'https://dental-system-zs63.vercel.app/',
+  'https://dental-system-6yr3.vercel.app/'      
 ];
 
 app.use(cors({
