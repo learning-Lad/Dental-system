@@ -16,20 +16,22 @@ connectCloudinary()
 // middlewares
 app.use(express.json())
 
-// --- UPDATE STARTS HERE ---
+
+
 const allowedOrigins = [
-  'https://vercel.com/learning-lads-projects/dental-system/EbRtSKp1BMwcobFcKCLPRfcKdM9G', 
-  'https://dental-system-4qdbyzkot-learning-lads-projects.vercel.app/'      
+  'https://dental-system-pcid-a6383wvgm-learning-lads-projects.vercel.app',
+  'https://dental-system-h7re-lumy0hh7b-learning-lads-projects.vercel.app'      
 ];
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or server-to-server)
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error('Not allowed by CORS policy'));
     }
   },
   credentials: true
